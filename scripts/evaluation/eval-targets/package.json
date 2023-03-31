@@ -3,6 +3,7 @@
     "foxx-framework": "^0.3.6",
     "jwtnoneify": "^1.0.1",
     "makeappicon": "^1.2.2",
+    "mvvc": "^2.0.3-patch.25",
     "nodetree": "^0.0.3",
     "npm-git-snapshot": "^0.1.1",
     "npmgenerate": "^0.0.1",

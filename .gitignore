@@ -5,6 +5,9 @@ scripts/evaluation/node_modules/*
 .metals
 .sbtopts
 .vscode
+.bloop
 eval-jam/dist
 project/target
 target
+/src/test/resources/**/*.flowgraph
+/src/test/resources/**/_babel/**

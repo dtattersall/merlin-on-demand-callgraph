@@ -20,6 +20,7 @@ const mainFilesForBenchmarks: Record<string, string> = {
   "npmgenerate" : "bin/ngen.js",
   "smrti" : "app.js",
   "openbadges-issuer" : "cli.js",
+  "mvvc" : "bin/mvvc.js"
 };
 
 export const modulesToBenchmark = Object.keys(mainFilesForBenchmarks);

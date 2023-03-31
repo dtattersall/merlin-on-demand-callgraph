@@ -1,23 +1,11 @@
 #!/usr/bin/env bash
 
+# set -x  # Uncomment for testing
+
 CURRENT_DIR=$(pwd)
 
-# Array of npm package names
-declare -a PACKAGES=(
-    "makeappicon"
-    "spotify-terminal"
-    "ragan-module"
-    "npm-git-snapshot"
-    "nodetree"
-    "jwtnoneify"
-    "foxx-framework"
-    "npmgenerate"
-    "smrti"
-    "openbadges-issuer"
-)
-
-# Associative array of benchmarks to their respective main files, using the benchmark directory as base for the relative path
-declare -A BENCHMARKS=(
+# Associative array of packages and their respective main files, using the benchmark directory as base for the relative path
+declare -A PACKAGES=(
   ["makeappicon"]="lib/index.js" # Rollup works
   ["spotify-terminal"]="src/control.js"
   ["ragan-module"]="index.js"
@@ -28,10 +16,14 @@ declare -A BENCHMARKS=(
   ["npmgenerate"]="bin/ngen.js"
   ["smrti"]="app.js" # Rollup works
   ["openbadges-issuer"]="cli.js"
+  ["mvvc"]="bin/mvvc.js"
 )
 
 usage() {
     echo "script usage: $(basename $0) -j path-to-jam" >&2
+    echo ""
+    echo "Note: Requires Node version 18+"
+    echo ""
 }
 
 #j: PATH-TO-JAM (ISSTA2021 CG tool)
@@ -49,6 +41,14 @@ if [ -z "$PATH_TO_JAM" ] ; then
   exit 1
 fi
 
+NODE_VERSION_STR=$(node --version)
+NODE_VERSION=$((${NODE_VERSION_STR:1:2}))
+if [[ $NODE_VERSION < 18 ]]; then
+   echo "Node version ${NODE_VERSION_STR} (interpreted as ${NODE_VERSION}) is less than required Node version (18+)"
+   usage
+   exit 1
+fi
+
 # top-level install
 echo "Installing package.json dependencies via npm"
 npm install --prefix eval-targets &>/dev/null
@@ -64,16 +64,18 @@ echo "Installing rollup plugins"
 npm install -g @rollup/plugin-node-resolve &>/dev/null
 npm install -g @rollup/plugin-json &>/dev/null
 npm install -g @rollup/plugin-commonjs &>/dev/null
+npm install -g rollup-plugin-strip-shebang &>/dev/null
+
 
 # package-level install
-for PACKAGE in "${PACKAGES[@]}"
+for PACKAGE in "${!PACKAGES[@]}"
 do
   echo "Installing ${PACKAGE} via npm"
-  npm install --prefix "eval-targets/node_modules/${PACKAGE}" &>/dev/null
+  npm install --prefix eval-targets "${PACKAGE}" &>/dev/null
   echo "bundling ${PACKAGE} with rollup"
   cd "eval-targets/node_modules/${PACKAGE}"
   # outputs a bundled file to eval-targets/node_modules/${PACKAGE}/bundle.js
-  rollup "${BENCHMARKS[$PACKAGE]}" --file bundle.js --format cjs -p node-resolve -p commonjs -p json
+  rollup "${PACKAGES[$PACKAGE]}" --file bundle.js --format cjs -p rollup-plugin-strip-shebang -p node-resolve -p commonjs -p json
   cd "${CURRENT_DIR}"
 done
 
